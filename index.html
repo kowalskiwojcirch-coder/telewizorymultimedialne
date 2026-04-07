@@ -2,92 +2,78 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>Sterowanie Telebimem</title>
+<title>Kontrola Telewizorów</title>
 <style>
 body {
-  background: black;
-  color: #D1A63F;
-  font-family: sans-serif;
+  font-family: Arial, sans-serif;
+  background: #222;
+  color: #eee;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100vh;
+  padding: 40px;
 }
-
 textarea {
-  width: 80%;
-  max-width: 600px;
-  height: 100px;
-  margin-bottom: 10px;
-  background: #111;
-  color: #D1A63F;
-  border: 2px solid #D1A63F;
-  border-radius: 5px;
-  font-size: 16px;
+  width: 600px;
+  height: 150px;
+  font-size: 18px;
+  margin-bottom: 20px;
   padding: 10px;
+  border-radius: 6px;
+  border: none;
+  resize: none;
 }
-
+button {
+  margin: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background: #D1A63F;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+button:hover {
+  background: #b8912f;
+}
 .controls {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-button {
-  background: #222;
-  color: #D1A63F;
-  border: 2px solid #D1A63F;
-  border-radius: 5px;
-  padding: 10px 15px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-button:hover {
-  background: #333;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 </style>
 </head>
 <body>
-
-<h1>Sterowanie Telebimem</h1>
-
-<textarea id="textInput" placeholder="Wpisz tekst do telebimu..."></textarea>
-
+<h2>Kontrola Telebimu</h2>
+<textarea id="textInput" placeholder="Wpisz tekst tutaj..."></textarea>
 <div class="controls">
-  <button id="prevSlide">⬅ Poprzedni</button>
-  <button id="nextSlide">➡ Następny</button>
-  <button id="toggleDisplay">Włącz/Wyłącz</button>
-  <button id="clearText">Wyczyść</button>
+  <button onclick="updateText()">Wyślij</button>
+  <button onclick="prevSlide()">Poprzedni slajd</button>
+  <button onclick="nextSlide()">Następny slajd</button>
+  <button onclick="clearText()">Wyczyść</button>
 </div>
 
 <script>
-// Obsługa LocalStorage
-const textInput = document.getElementById("textInput");
+const textarea=document.getElementById("textInput");
 
-// Wczytanie tekstu z LocalStorage
-textInput.value = localStorage.getItem("text") || "";
-
-// Aktualizacja tekstu
-textInput.addEventListener("input", ()=>{
-  localStorage.setItem("text", textInput.value);
-});
-
-// Sterowanie slajdami i ekranem
-document.getElementById("nextSlide").onclick = ()=>{ localStorage.setItem("nextSlide", Date.now()); }
-document.getElementById("prevSlide").onclick = ()=>{ localStorage.setItem("prevSlide", Date.now()); }
-document.getElementById("toggleDisplay").onclick = ()=>{ 
-  const current = localStorage.getItem("displayOn") === "true";
-  localStorage.setItem("displayOn", !current);
+function updateText(){
+  const text=textarea.value;
+  localStorage.setItem("text",text);
 }
-document.getElementById("clearText").onclick = ()=>{
-  localStorage.setItem("text", "");
-  textInput.value = "";
-  localStorage.setItem("clearText", Date.now());
+
+function clearText(){
+  textarea.value="";
+  localStorage.setItem("text","");
+}
+
+function nextSlide(){
+  const display=window.open("display.html");
+  display.nextSlide();
+}
+
+function prevSlide(){
+  const display=window.open("display.html");
+  display.prevSlide();
 }
 </script>
-
 </body>
 </html>
