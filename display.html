@@ -46,35 +46,150 @@ body {
 </style>
 </head>
 <body>
+
 <div class="screen" id="screen"></div>
 
 <script>
-const ROWS=10;
-const COLS=20;
-const screen=document.getElementById("screen");
+const ROWS = 10;
+const COLS = 20;
+const screen = document.getElementById("screen");
 
-// Czcionki z polskimi znakami i cyframi
-// ... Tutaj wklej wszystkie fontBig i fontSmall z poprzedniego skryptu, z poprawionymi polskimi znakami ...
+// DUŻE litery i cyfry
+const fontBig = {
+  "A":["01110","10001","10001","11111","10001","10001","10001"],
+  "B":["11110","10001","11110","10001","10001","10001","11110"],
+  "C":["01111","10000","10000","10000","10000","10000","01111"],
+  "D":["11110","10001","10001","10001","10001","10001","11110"],
+  "E":["11111","10000","11110","10000","10000","10000","11111"],
+  "F":["11111","10000","11110","10000","10000","10000","10000"],
+  "G":["01111","10000","10000","10011","10001","10001","01111"],
+  "H":["10001","10001","11111","10001","10001","10001","10001"],
+  "I":["11111","00100","00100","00100","00100","00100","11111"],
+  "J":["00111","00010","00010","00010","10010","10010","01100"],
+  "K":["10001","10010","10100","11000","10100","10010","10001"],
+  "L":["10000","10000","10000","10000","10000","10000","11111"],
+  "M":["10001","11011","10101","10101","10001","10001","10001"],
+  "N":["10001","11001","10101","10011","10001","10001","10001"],
+  "O":["01110","10001","10001","10001","10001","10001","01110"],
+  "P":["11110","10001","10001","11110","10000","10000","10000"],
+  "Q":["01110","10001","10001","10001","10101","10010","01101"],
+  "R":["11110","10001","10001","11110","10100","10010","10001"],
+  "S":["01111","10000","10000","01110","00001","00001","11110"],
+  "T":["11111","00100","00100","00100","00100","00100","00100"],
+  "U":["10001","10001","10001","10001","10001","10001","01110"],
+  "V":["10001","10001","10001","10001","10001","01010","00100"],
+  "W":["10001","10001","10001","10101","10101","10101","01010"],
+  "X":["10001","10001","01010","00100","01010","10001","10001"],
+  "Y":["10001","10001","01010","00100","00100","00100","00100"],
+  "Z":["11111","00010","00100","00100","01000","10000","11111"],
+  "0":["01110","10001","10011","10101","11001","10001","01110"],
+  "1":["00100","01100","00100","00100","00100","00100","01110"],
+  "2":["01110","10001","00001","00010","00100","01000","11111"],
+  "3":["11110","00001","00010","00110","00001","10001","01110"],
+  "4":["00010","00110","01010","10010","11111","00010","00010"],
+  "5":["11111","10000","11110","00001","00001","10001","01110"],
+  "6":["00110","01000","10000","11110","10001","10001","01110"],
+  "7":["11111","00001","00010","00100","01000","01000","01000"],
+  "8":["01110","10001","10001","01110","10001","10001","01110"],
+  "9":["01110","10001","10001","01111","00001","00010","01100"],
+  " ":["00000","00000","00000","00000","00000","00000","00000"],
+  ".":["00000","00000","00000","00000","00000","01100","01100"],
+  ",":["00000","00000","00000","00000","00100","01000","00000"],
+  "!":["00100","00100","00100","00100","00000","00100","00000"],
+  "?":["01110","10001","00010","00100","00100","00000","00100"],
+  "x":["00000","00100","01110","01110","01110","00100","00000"]
+};
 
-// Pobranie macierzy litery
+// MAŁE litery 5x7
+const fontSmall = {
+"a":["00000","01110","00001","01111","10001","10001","01111"],
+"b":["10000","10000","11110","10001","10001","10001","11110"],
+"c":["00000","01111","10000","10000","10000","10000","01111"],
+"d":["00001","00001","01111","10001","10001","10001","01111"],
+"e":["00000","01110","10001","11111","10000","10001","01110"],
+"f":["00110","01000","11100","01000","01000","01001","00110"],
+"g":["00000","01111","10001","01111","00001","10001","01110"],
+"h":["10000","10000","11110","10001","10001","10001","10001"],
+"i":["00100","00000","01100","00100","00100","00100","01110"],
+"j":["00010","00000","00110","00010","00010","10010","01100"],
+"k":["10000","10001","10010","11100","10010","10001","10001"],
+"l":["01100","00100","00100","00100","00100","00100","01110"],
+"m":["00000","11010","10101","10101","10001","10001","10001"],
+"n":["00000","11110","10001","10001","10001","10001","10001"],
+"o":["00000","01110","10001","10001","10001","10001","01110"],
+"p":["00000","11110","10001","11110","10000","10000","10000"],
+"q":["00000","01111","10001","01111","00001","00001","00001"],
+"r":["00000","10110","11001","10000","10000","10000","10000"],
+"s":["00000","01111","10000","01110","00001","00001","11110"],
+"t":["00100","00100","11110","00100","00100","00100","00010"],
+"u":["00000","10001","10001","10001","10001","10011","01101"],
+"v":["00000","10001","10001","10001","10001","01010","00100"],
+"w":["00000","10001","10001","10001","10101","10101","01010"],
+"x":["00000","10001","01010","00100","01010","10001","10001"],
+"y":["00000","10001","10001","01111","00001","00001","11110"],
+"z":["00000","11111","00010","00100","01000","10000","11111"],
+" ":["00000","00000","00000","00000","00000","00000","00000"],
+".":["00000","00000","00000","00000","00000","01100","01100"],
+",":["00000","00000","00000","00000","00100","01000","00000"],
+"!":["00100","00100","00100","00100","00000","00100","00000"],
+"?":["01110","10001","00010","00100","00100","00000","00100"],
+"ą":["00000","01110","00001","01111","10001","10101","01010"],
+"ę":["00000","01110","10001","11111","10000","10101","01110"],
+"ł":["01000","01000","01110","01000","01000","01000","01110"],
+"ń":["00000","11110","10001","10001","10001","01010","00100"],
+"ó":["00000","01110","10001","10001","10101","10001","01110"],
+"ś":["00000","01110","10001","01110","00001","00001","01110"],
+"ż":["00000","11111","00010","00100","01000","10010","11111"],
+"ź":["00000","11111","00010","00100","01001","10010","11101"]
+};
+
 function getMatrix(char){
   if(fontBig[char]) return fontBig[char];
   if(fontSmall[char]) return fontSmall[char];
   return fontBig[" "];
 }
 
-// Podział tekstu na slajdy
+// Slajdy po podwójnym enterze
 function paginateText(text){
-  const lines=text.split("\n\n"); // dwa entery -> nowy slajd
-  const pages=[];
-  lines.forEach(lineBlock=>{
-    const chars=lineBlock.replace(/\n/g," ").split("");
-    while(chars.length) pages.push(chars.splice(0,ROWS*COLS));
+  const lines=text.split("\n");
+  const slides=[];
+  let slide=[];
+  lines.forEach(line=>{
+    if(line.trim()=="" && slide.length>0){
+      slides.push(slide);
+      slide=[];
+    } else slide.push(line);
   });
-  return pages;
+  if(slide.length>0) slides.push(slide);
+  return slides;
 }
 
-// Render pustego ekranu z 4 x w rogach
+// Render slajdu
+function renderSlide(slide){
+  screen.innerHTML="";
+  for(let r=0;r<ROWS;r++){
+    const lineDiv=document.createElement("div");
+    lineDiv.className="line";
+    for(let c=0;c<COLS;c++){
+      let char=" ";
+      if(slide[r]) char=slide[r][c]||" ";
+      const charDiv=document.createElement("div");
+      charDiv.className="char";
+      getMatrix(char).forEach(row=>{
+        row.split("").forEach(bit=>{
+          const dot=document.createElement("div");
+          dot.className="dot";
+          if(bit==="1") dot.classList.add("on");
+          charDiv.appendChild(dot);
+        });
+      });
+      lineDiv.appendChild(charDiv);
+    }
+    screen.appendChild(lineDiv);
+  }
+}
+
+// Pusty ekran: 4 x w rogach
 function renderEmpty(){
   screen.innerHTML="";
   for(let r=0;r<ROWS;r++){
@@ -99,57 +214,41 @@ function renderEmpty(){
   }
 }
 
-// Render pojedynczej strony
-function renderPage(pageChars){
-  screen.innerHTML="";
-  for(let r=0;r<ROWS;r++){
-    const line=document.createElement("div");
-    line.className="line";
-    for(let c=0;c<COLS;c++){
-      const char=pageChars[r*COLS+c]||" ";
-      const charDiv=document.createElement("div");
-      charDiv.className="char";
-      getMatrix(char).forEach(row=>{
-        row.split("").forEach(bit=>{
-          const dot=document.createElement("div");
-          dot.className="dot";
-          if(bit==="1") dot.classList.add("on");
-          charDiv.appendChild(dot);
-        });
-      });
-      line.appendChild(charDiv);
-    }
-    screen.appendChild(line);
-  }
-}
-
 // Render całego tekstu
+let slides=[], currentSlide=0;
 function renderText(text){
-  if(!text) return renderEmpty();
-  const pages=paginateText(text);
-  let current=0;
-  renderPage(pages[current]);
-  window.currentSlide=current;
-  window.slides=pages;
+  if(!text || text.trim()==="") { renderEmpty(); return; }
+  slides=paginateText(text);
+  currentSlide=0;
+  renderSlide(slides[currentSlide]);
 }
 
-// Sterowanie slajdami
-window.nextSlide=function(){
-  if(!window.slides) return;
-  window.currentSlide=(window.currentSlide+1)%window.slides.length;
-  renderPage(window.slides[window.currentSlide]);
-}
-window.prevSlide=function(){
-  if(!window.slides) return;
-  window.currentSlide=(window.currentSlide-1+window.slides.length)%window.slides.length;
-  renderPage(window.slides[window.currentSlide]);
-}
+// LocalStorage kontrola
+window.addEventListener("storage",(e)=>{
+  if(e.key==="text") renderText(e.newValue);
+  if(e.key==="nextSlide"){ 
+    if(slides.length>0){
+      currentSlide=(currentSlide+1)%slides.length;
+      renderSlide(slides[currentSlide]);
+    }
+  }
+  if(e.key==="prevSlide"){ 
+    if(slides.length>0){
+      currentSlide=(currentSlide-1+slides.length)%slides.length;
+      renderSlide(slides[currentSlide]);
+    }
+  }
+  if(e.key==="clearText") renderText("");
+  if(e.key==="displayOn"){
+    const on=e.newValue==="true";
+    if(!on) renderEmpty();
+    else renderText(localStorage.getItem("text"));
+  }
+});
 
 // Start
 renderText(localStorage.getItem("text"));
-window.addEventListener("storage",e=>{
-  if(e.key==="text") renderText(e.newValue);
-});
 </script>
+
 </body>
 </html>
