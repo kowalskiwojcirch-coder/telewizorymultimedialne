@@ -2,42 +2,50 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>Display</title>
+<title>Telebim LED</title>
 <style>
-  body {
-    margin: 0;
-    background: black;
-  }
+body {
+  margin: 0;
+  background: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
 
-  .screen {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 10px;
-  }
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+}
 
-  .line {
-    display: flex;
-    gap: 4px;
-  }
+.line {
+  display: flex;
+  gap: 4px;
+}
 
-  .char {
-    display: grid;
-    grid-template-columns: repeat(5, 4px);
-    grid-template-rows: repeat(7, 4px);
-    gap: 1px;
-  }
+/* jedna litera */
+.char {
+  display: grid;
+  grid-template-columns: repeat(5, 6px);
+  grid-template-rows: repeat(8, 6px);
+  gap: 1px;
+}
 
-  .dot {
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: #111;
-  }
+/* kropka LED OFF */
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;  /* prawdziwe kółko */
+  background: #111;
+}
 
-  .on {
-    background: orange;
-  }
+/* LED ON */
+.on {
+  background: #D1A63F;
+  box-shadow: 0 0 4px #D1A63F;
+}
 </style>
 </head>
 <body>
@@ -45,107 +53,97 @@
 <div class="screen" id="screen"></div>
 
 <script>
+const ROWS = 10;
+const COLS = 20;
+
 const screen = document.getElementById("screen");
 
-// czcionka
-const font = {
-  "A":["01110","10001","10001","11111","10001","10001","10001"],
-  "B":["11110","10001","11110","10001","10001","10001","11110"],
-  "C":["01111","10000","10000","10000","10000","10000","01111"],
-  "D":["11110","10001","10001","10001","10001","10001","11110"],
-  "E":["11111","10000","11110","10000","10000","10000","11111"],
-  "F":["11111","10000","11110","10000","10000","10000","10000"],
-  "G":["01111","10000","10000","10111","10001","10001","01111"],
-  "H":["10001","10001","11111","10001","10001","10001","10001"],
-  "I":["11111","00100","00100","00100","00100","00100","11111"],
-  "J":["00111","00010","00010","00010","10010","10010","01100"],
-  "K":["10001","10010","11100","10010","10010","10001","10001"],
-  "L":["10000","10000","10000","10000","10000","10000","11111"],
-  "M":["10001","11011","10101","10101","10001","10001","10001"],
-  "N":["10001","11001","10101","10011","10001","10001","10001"],
-  "O":["01110","10001","10001","10001","10001","10001","01110"],
-  "P":["11110","10001","10001","11110","10000","10000","10000"],
-  "Q":["01110","10001","10001","10001","10101","10010","01101"],
-  "R":["11110","10001","10001","11110","10010","10001","10001"],
-  "S":["01111","10000","10000","01110","00001","00001","11110"],
-  "T":["11111","00100","00100","00100","00100","00100","00100"],
-  "U":["10001","10001","10001","10001","10001","10001","01110"],
-  "V":["10001","10001","10001","10001","10001","01010","00100"],
-  "W":["10001","10001","10001","10101","10101","10101","01010"],
-  "X":["10001","01010","00100","00100","00100","01010","10001"],
-  "Y":["10001","01010","00100","00100","00100","00100","00100"],
-  "Z":["11111","00010","00100","00100","01000","10000","11111"],
-
-  "0":["01110","10001","10011","10101","11001","10001","01110"],
-  "1":["00100","01100","00100","00100","00100","00100","01110"],
-  "2":["01110","10001","00001","00010","00100","01000","11111"],
-  "3":["11110","00001","00001","01110","00001","00001","11110"],
-  "4":["00010","00110","01010","10010","11111","00010","00010"],
-  "5":["11111","10000","11110","00001","00001","10001","01110"],
-  "6":["00110","01000","10000","11110","10001","10001","01110"],
-  "7":["11111","00001","00010","00100","01000","01000","01000"],
-  "8":["01110","10001","10001","01110","10001","10001","01110"],
-  "9":["01110","10001","10001","01111","00001","00010","11100"],
-
-  " ":["00000","00000","00000","00000","00000","00000","00000"]
+// DUŻE litery
+const fontBig = {
+"A":["01110","10001","10001","11111","10001","10001","10001"],
+"B":["11110","10001","11110","10001","10001","10001","11110"],
+"C":["01111","10000","10000","10000","10000","10000","01111"],
+"E":["11111","10000","11110","10000","10000","10000","11111"],
+"L":["10000","10000","10000","10000","10000","10000","11111"],
+"O":["01110","10001","10001","10001","10001","10001","01110"],
+"S":["01111","10000","10000","01110","00001","00001","11110"],
+"Z":["11111","00010","00100","00100","01000","10000","11111"],
+" ":["00000","00000","00000","00000","00000","00000","00000"]
 };
 
-// mapowanie polskich znaków → bazowe
-const polishMap = {
-  "Ą":"A","Ć":"C","Ę":"E","Ł":"L","Ń":"N","Ó":"O","Ś":"S","Ż":"Z","Ź":"Z",
-  "ą":"A","ć":"C","ę":"E","ł":"L","ń":"N","ó":"O","ś":"S","ż":"Z","ź":"Z"
+// MAŁE litery
+const fontSmall = {
+"a":["00000","01110","00001","01111","10001","10001","01111"],
+"e":["00000","01110","10001","11111","10000","10001","01110"],
+"i":["00100","00000","01100","00100","00100","00100","01110"],
+"m":["00000","11010","10101","10101","10101","10101","10101"],
+"n":["00000","11110","10001","10001","10001","10001","10001"],
+"o":["00000","01110","10001","10001","10001","10001","01110"],
+"w":["00000","10001","10001","10101","10101","10101","01010"],
+"y":["00000","10001","10001","01111","00001","00010","11100"],
+"z":["00000","11111","00010","00100","01000","10000","11111"],
+" ":["00000","00000","00000","00000","00000","00000","00000"]
 };
 
-function normalizeChar(c) {
-  if (polishMap[c]) return polishMap[c];
-  return c.toUpperCase();
+// polskie znaki
+const polish = {"ą":"a","ć":"c","ę":"e","ł":"l","ń":"n","ó":"o","ś":"s","ż":"z","ź":"z"};
+
+function getMatrix(char){
+    if(polish[char]) char=polish[char];
+    if(char===char.toLowerCase()) return fontSmall[char] || fontSmall[" "];
+    return fontBig[char] || fontBig[" "];
 }
 
-function getChar(c) {
-  return font[c] || font[" "];
-}
-
-function render(text) {
-  screen.innerHTML = "";
-
-  const lines = text.split("\n");
-
-  lines.forEach(lineText => {
-    const line = document.createElement("div");
-    line.className = "line";
-
-    for (let char of lineText) {
-      const normalized = normalizeChar(char);
-      const matrix = getChar(normalized);
-
-      const charDiv = document.createElement("div");
-      charDiv.className = "char";
-
-      matrix.forEach(row => {
-        row.split("").forEach(bit => {
-          const dot = document.createElement("div");
-          dot.className = "dot";
-          if (bit === "1") dot.classList.add("on");
-          charDiv.appendChild(dot);
-        });
-      });
-
-      line.appendChild(charDiv);
+function paginateText(text){
+    const chars = text.split("");
+    const pages = [];
+    while(chars.length){
+        pages.push(chars.splice(0, ROWS*COLS));
     }
-
-    screen.appendChild(line);
-  });
+    return pages;
 }
 
-// nasłuchiwanie
-window.addEventListener("storage", (e) => {
-  if (e.key === "text") {
-    render(e.newValue);
-  }
-});
+function renderPage(pageChars){
+    screen.innerHTML = "";
+    for(let r=0;r<ROWS;r++){
+        const line = document.createElement("div");
+        line.className="line";
+        for(let c=0;c<COLS;c++){
+            const char = pageChars[r*COLS + c] || " ";
+            const charDiv=document.createElement("div");
+            charDiv.className="char";
+            const matrix=getMatrix(char);
+            matrix.forEach(row=>{
+                row.split("").forEach(bit=>{
+                    const dot=document.createElement("div");
+                    dot.className="dot";
+                    if(bit==="1") dot.classList.add("on");
+                    charDiv.appendChild(dot);
+                });
+            });
+            line.appendChild(charDiv);
+        }
+        screen.appendChild(line);
+    }
+}
+
+function renderText(text){
+    const pages = paginateText(text);
+    let current = 0;
+    renderPage(pages[current]);
+    if(pages.length>1){
+        setInterval(()=>{
+            current=(current+1)%pages.length;
+            renderPage(pages[current]);
+        },2500);
+    }
+}
 
 // start
-render(localStorage.getItem("text") || "Zażółć gęślą jaźń");
+renderText(localStorage.getItem("text") || "Pan z wami i z duchem twoim. Zażółć gęślą jaźń.");
+window.addEventListener("storage",(e)=>{
+    if(e.key==="text") renderText(e.newValue);
+});
 </script>
 
 </body>
