@@ -1,1 +1,48 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Sterowanie</title>
+<style>
+  body {
+    font-family: Arial;
+    background: #222;
+    color: white;
+    padding: 20px;
+  }
 
+  textarea {
+    width: 100%;
+    height: 150px;
+    font-size: 18px;
+  }
+
+  button {
+    padding: 10px 20px;
+    font-size: 18px;
+    margin-top: 10px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h2>Telebim LED</h2>
+
+<textarea id="text">GDY NA KRZYŻU KONAC</textarea>
+<br>
+<button onclick="send()">Wyślij</button>
+<button onclick="openDisplay()">Otwórz ekran</button>
+
+<script>
+function send() {
+  localStorage.setItem("text", document.getElementById("text").value);
+}
+
+function openDisplay() {
+  window.open("display.html", "_blank");
+}
+</script>
+
+</body>
+</html>
