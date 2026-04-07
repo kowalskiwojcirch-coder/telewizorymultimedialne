@@ -2,46 +2,229 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>Sterowanie</title>
+<title>Telebim LED</title>
 <style>
-  body {
-    font-family: Arial;
-    background: #222;
-    color: white;
-    padding: 20px;
-  }
+body {
+  margin: 0;
+  background: black;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: white;
+  font-family: sans-serif;
+}
 
-  textarea {
-    width: 100%;
-    height: 150px;
-    font-size: 18px;
-  }
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  border: 3px solid #D1A63F;
+  background: #000;
+}
 
-  button {
-    padding: 10px 20px;
-    font-size: 18px;
-    margin-top: 10px;
-    cursor: pointer;
-  }
+.line {
+  display: flex;
+  gap: 4px;
+}
+
+.char {
+  display: grid;
+  grid-template-columns: repeat(5, 5px);
+  grid-template-rows: repeat(7, 5px);
+  gap: 0.8px;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #111;
+}
+
+.on {
+  background: #D1A63F;
+  box-shadow: 0 0 2px #D1A63F;
+}
+
+.controls {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+}
+
+button {
+  padding: 8px 15px;
+  border: none;
+  background: #222;
+  color: #D1A63F;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #333;
+}
 </style>
 </head>
 <body>
 
-<h2>Telebim LED</h2>
+<div class="screen" id="screen"></div>
 
-<textarea id="text">GDY NA KRZYŻU KONAC</textarea>
-<br>
-<button onclick="send()">Wyślij</button>
-<button onclick="openDisplay()">Otwórz ekran</button>
+<div class="controls">
+  <button id="prevSlide">⬅ Poprzedni</button>
+  <button id="nextSlide">➡ Następny</button>
+  <button id="toggleDisplay">Włącz/Wyłącz</button>
+  <button id="clearText">Wyczyść</button>
+</div>
+
+<textarea id="textInput" placeholder="Wpisz swój tekst tutaj..." rows="4" cols="50"></textarea>
 
 <script>
-function send() {
-  localStorage.setItem("text", document.getElementById("text").value);
+const ROWS = 10;
+const COLS = 20;
+const screen = document.getElementById("screen");
+const textInput = document.getElementById("textInput");
+let slides = [];
+let currentSlide = 0;
+let displayOn = true;
+
+// FONT z gwiazdką, polskimi znakami i literami
+const fontBig = {
+  "A":["01110","10001","10001","11111","10001","10001","10001"],
+  "Ą":["01110","10001","10001","11111","10001","10101","01010"],
+  "B":["11110","10001","11110","10001","10001","10001","11110"],
+  "C":["01111","10000","10000","10000","10000","10000","01111"],
+  "Ć":["01110","10001","10000","11110","10001","10001","01110"],
+  "D":["11110","10001","10001","10001","10001","10001","11110"],
+  "E":["11111","10000","11110","10000","10000","10000","11111"],
+  "Ę":["11111","10000","11110","10000","10001","10101","01110"],
+  "F":["11111","10000","11110","10000","10000","10000","10000"],
+  "G":["01111","10000","10000","10011","10001","10001","01111"],
+  "H":["10001","10001","11111","10001","10001","10001","10001"],
+  "I":["11111","00100","00100","00100","00100","00100","11111"],
+  "J":["00111","00010","00010","00010","10010","10010","01100"],
+  "K":["10001","10010","10100","11000","10100","10010","10001"],
+  "L":["10000","10000","10000","10000","10000","10000","11111"],
+  "Ł":["10001","10000","10000","11110","10000","10000","11110"],
+  "M":["10001","11011","10101","10101","10001","10001","10001"],
+  "N":["10001","11001","10101","10011","10001","10001","10001"],
+  "Ń":["10001","11001","10101","10011","10001","01010","00100"],
+  "O":["01110","10001","10001","10001","10001","10001","01110"],
+  "Ó":["01110","10001","10001","10001","10101","10001","01110"],
+  "P":["11110","10001","10001","11110","10000","10000","00000"],
+  "Q":["01110","10001","10001","10001","10101","10010","01101"],
+  "R":["11110","10001","10001","11110","10100","10010","10001"],
+  "S":["01111","10000","10000","01110","00001","00001","11110"],
+  "Ś":["01110","10001","10000","01110","00001","00001","01110"],
+  "T":["11111","00100","00100","00100","00100","00100","00100"],
+  "U":["10001","10001","10001","10001","10001","10001","01110"],
+  "W":["10001","10001","10001","10101","10101","10101","01010"],
+  "Y":["10001","10001","01010","00100","00100","00100","00100"],
+  "Z":["11111","00010","00100","00100","01000","10000","11111"],
+  "Ż":["11111","00010","00100","00100","01000","10010","11111"],
+  "Ź":["11111","00010","00100","00100","01001","10010","11101"],
+  "*":["10001","01010","00100","01010","10001","00000","00000"],
+  " ":["00000","00000","00000","00000","00000","00000","00000"],
+  ".":["00000","00000","00000","00000","00000","01100","01100"],
+  ",":["00000","00000","00000","00000","00100","01000","00000"],
+  "!":["00100","00100","00100","00100","00000","00100","00000"],
+  "?":["01110","10001","00010","00100","00100","00000","00100"]
+};
+
+function getMatrix(char){
+  return fontBig[char] || fontBig[" "];
 }
 
-function openDisplay() {
-  window.open("display.html", "_blank");
+// Podział na slajdy (2 Enter → nowy slajd)
+function paginateText(text){
+  const rawSlides = text.split(/\n{2,}/);
+  return rawSlides.map(slide=>{
+    const chars = [];
+    slide.split("\n").forEach(line=>{
+      for(let i=0;i<line.length;i++) chars.push(line[i]);
+      while(chars.length % COLS !==0) chars.push(" ");
+    });
+    return chars;
+  });
 }
+
+// Render
+function renderPage(chars){
+  screen.innerHTML="";
+  for(let r=0;r<ROWS;r++){
+    const line = document.createElement("div");
+    line.className="line";
+    for(let c=0;c<COLS;c++){
+      const char = chars[r*COLS+c] || " ";
+      const charDiv = document.createElement("div");
+      charDiv.className="char";
+      const matrix = getMatrix(char);
+      matrix.forEach(row=>{
+        row.split("").forEach(bit=>{
+          const dot = document.createElement("div");
+          dot.className="dot";
+          if(bit==="1") dot.classList.add("on");
+          charDiv.appendChild(dot);
+        });
+      });
+      line.appendChild(charDiv);
+    }
+    screen.appendChild(line);
+  }
+}
+
+function showSlide(){
+  if(!displayOn) return;
+  if(!slides.length){
+    // puste → 4 gwiazdki w rogach
+    const empty = Array(ROWS*COLS).fill(" ");
+    empty[0]="*";
+    empty[COLS-1]="*";
+    empty[ROWS*COLS-COLS]="*";
+    empty[ROWS*COLS-1]="*";
+    renderPage(empty);
+  } else {
+    renderPage(slides[currentSlide]);
+  }
+}
+
+// Obsługa przycisków
+document.getElementById("nextSlide").onclick = ()=>{
+  if(slides.length===0) return;
+  currentSlide = (currentSlide+1)%slides.length;
+  showSlide();
+};
+document.getElementById("prevSlide").onclick = ()=>{
+  if(slides.length===0) return;
+  currentSlide = (currentSlide-1+slides.length)%slides.length;
+  showSlide();
+};
+document.getElementById("toggleDisplay").onclick = ()=>{
+  displayOn = !displayOn;
+  showSlide();
+};
+document.getElementById("clearText").onclick = ()=>{
+  slides=[];
+  currentSlide=0;
+  textInput.value="";
+  showSlide();
+};
+
+// Aktualizacja tekstu w loc. storage
+textInput.addEventListener("input",()=>{
+  const text = textInput.value;
+  slides = paginateText(text);
+  currentSlide = 0;
+  showSlide();
+});
+
+// Start
+showSlide();
 </script>
 
 </body>
