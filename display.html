@@ -1,1 +1,111 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Display</title>
+<style>
+  body {
+    margin: 0;
+    background: black;
+  }
 
+  .screen {
+    display: grid;
+    grid-template-columns: repeat(20, auto);
+    gap: 6px;
+    padding: 10px;
+  }
+
+  .char {
+    display: grid;
+    grid-template-columns: repeat(5, 4px);
+    grid-template-rows: repeat(7, 4px);
+    gap: 1px;
+  }
+
+  .dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #111;
+  }
+
+  .on {
+    background: orange;
+  }
+</style>
+</head>
+<body>
+
+<div class="screen" id="screen"></div>
+
+<script>
+const screen = document.getElementById("screen");
+
+// prosta czcionka 5x7
+const font = {
+  "A": [
+    "01110",
+    "10001",
+    "10001",
+    "11111",
+    "10001",
+    "10001",
+    "10001"
+  ],
+  "B": [
+    "11110",
+    "10001",
+    "11110",
+    "10001",
+    "10001",
+    "10001",
+    "11110"
+  ],
+  " ": [
+    "00000","00000","00000","00000","00000","00000","00000"
+  ]
+};
+
+// fallback dla nieznanych znaków
+function getChar(c) {
+  return font[c] || font[" "];
+}
+
+function render(text) {
+  screen.innerHTML = "";
+
+  text = text.toUpperCase();
+
+  for (let char of text) {
+    const matrix = getChar(char);
+
+    const charDiv = document.createElement("div");
+    charDiv.className = "char";
+
+    matrix.forEach(row => {
+      row.split("").forEach(bit => {
+        const dot = document.createElement("div");
+        dot.className = "dot";
+        if (bit === "1") dot.classList.add("on");
+        charDiv.appendChild(dot);
+      });
+    });
+
+    screen.appendChild(charDiv);
+  }
+}
+
+// odbiór danych
+window.addEventListener("storage", (e) => {
+  if (e.key === "text") {
+    render(e.newValue);
+  }
+});
+
+// start
+render(localStorage.getItem("text") || "WITAJ");
+</script>
+
+</body>
+</html>
