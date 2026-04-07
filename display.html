@@ -47,7 +47,7 @@
 <script>
 const screen = document.getElementById("screen");
 
-// pełniejsza czcionka
+// czcionka
 const font = {
   "A":["01110","10001","10001","11111","10001","10001","10001"],
   "B":["11110","10001","11110","10001","10001","10001","11110"],
@@ -75,6 +75,7 @@ const font = {
   "X":["10001","01010","00100","00100","00100","01010","10001"],
   "Y":["10001","01010","00100","00100","00100","00100","00100"],
   "Z":["11111","00010","00100","00100","01000","10000","11111"],
+
   "0":["01110","10001","10011","10101","11001","10001","01110"],
   "1":["00100","01100","00100","00100","00100","00100","01110"],
   "2":["01110","10001","00001","00010","00100","01000","11111"],
@@ -85,8 +86,20 @@ const font = {
   "7":["11111","00001","00010","00100","01000","01000","01000"],
   "8":["01110","10001","10001","01110","10001","10001","01110"],
   "9":["01110","10001","10001","01111","00001","00010","11100"],
+
   " ":["00000","00000","00000","00000","00000","00000","00000"]
 };
+
+// mapowanie polskich znaków → bazowe
+const polishMap = {
+  "Ą":"A","Ć":"C","Ę":"E","Ł":"L","Ń":"N","Ó":"O","Ś":"S","Ż":"Z","Ź":"Z",
+  "ą":"A","ć":"C","ę":"E","ł":"L","ń":"N","ó":"O","ś":"S","ż":"Z","ź":"Z"
+};
+
+function normalizeChar(c) {
+  if (polishMap[c]) return polishMap[c];
+  return c.toUpperCase();
+}
 
 function getChar(c) {
   return font[c] || font[" "];
@@ -95,14 +108,16 @@ function getChar(c) {
 function render(text) {
   screen.innerHTML = "";
 
-  const lines = text.toUpperCase().split("\n");
+  const lines = text.split("\n");
 
   lines.forEach(lineText => {
     const line = document.createElement("div");
     line.className = "line";
 
     for (let char of lineText) {
-      const matrix = getChar(char);
+      const normalized = normalizeChar(char);
+      const matrix = getChar(normalized);
+
       const charDiv = document.createElement("div");
       charDiv.className = "char";
 
@@ -130,7 +145,7 @@ window.addEventListener("storage", (e) => {
 });
 
 // start
-render(localStorage.getItem("text") || "WITAJ");
+render(localStorage.getItem("text") || "Zażółć gęślą jaźń");
 </script>
 
 </body>
