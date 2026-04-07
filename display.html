@@ -54,7 +54,7 @@ const ROWS = 10;
 const COLS = 20;
 const screen = document.getElementById("screen");
 
-// Font LED duży i mały (pełne polskie znaki)
+// Font LED z polskimi znakami i gwiazdką
 const fontBig = {
   "A":["01110","10001","10001","11111","10001","10001","10001"],
   "Ą":["01110","10001","10001","11111","10001","10101","01010"],
@@ -77,7 +77,7 @@ const fontBig = {
   "Ń":["10001","11001","10101","10011","10001","01010","00100"],
   "O":["01110","10001","10001","10001","10001","10001","01110"],
   "Ó":["01110","10001","10001","10001","10101","10001","01110"],
-  "P":["11110","10001","10001","11110","10000","10000","10000"],
+  "P":["11110","10001","10001","11110","10000","10000","00000"],
   "Q":["01110","10001","10001","10001","10101","10010","01101"],
   "R":["11110","10001","10001","11110","10100","10010","10001"],
   "S":["01111","10000","10000","01110","00001","00001","11110"],
@@ -89,48 +89,43 @@ const fontBig = {
   "Z":["11111","00010","00100","00100","01000","10000","11111"],
   "Ż":["11111","00010","00100","00100","01000","10010","11111"],
   "Ź":["11111","00010","00100","00100","01001","10010","11101"],
+  "*":["10001","01010","00100","01010","10001","00000","00000"],
   " ":["00000","00000","00000","00000","00000","00000","00000"],
   ".":["00000","00000","00000","00000","00000","01100","01100"],
   ",":["00000","00000","00000","00000","00100","01000","00000"],
   "!":["00100","00100","00100","00100","00000","00100","00000"],
-  "?":["01110","10001","00010","00100","00100","00000","00100"],
-  "*":["10001","01010","00100","01010","10001","00000","00000"]
+  "?":["01110","10001","00010","00100","00100","00000","00100"]
 };
 
-const fontSmall = {...fontBig}; // dla prostoty użyjemy tej samej czcionki w demo
-
 function getMatrix(char){
-  if(fontBig[char]) return fontBig[char];
-  if(fontSmall[char]) return fontSmall[char];
-  return fontBig[" "];
+  return fontBig[char] || fontBig[" "];
 }
 
+// Podział tekstu na slajdy (2 Enter → nowy slajd)
 function paginateText(text){
-  const lines = text.split("\n"); // obsługa Enter
-  const pages = [];
-  let pageChars = [];
-  lines.forEach(line=>{
-    for(let i=0;i<line.length;i++){
-      pageChars.push(line[i]);
-      if(pageChars.length===ROWS*COLS){
-        pages.push([...pageChars]);
-        pageChars=[];
+  const slides = [];
+  const rawSlides = text.split(/\n{2,}/); // dwa lub więcej Enter → nowy slajd
+  rawSlides.forEach(slideText=>{
+    const chars = [];
+    slideText.split("\n").forEach(line=>{
+      for(let i=0;i<line.length;i++){
+        chars.push(line[i]);
       }
-    }
-    // Dodaj Enter jako spację, żeby przejść do następnej linii
-    while(pageChars.length%COLS!==0) pageChars.push(" ");
+      while(chars.length % COLS !==0) chars.push(" ");
+    });
+    slides.push(chars);
   });
-  if(pageChars.length>0) pages.push(pageChars);
-  return pages;
+  return slides;
 }
 
-function renderPage(pageChars){
+// Render jednej strony
+function renderPage(chars){
   screen.innerHTML="";
   for(let r=0;r<ROWS;r++){
     const line = document.createElement("div");
     line.className="line";
     for(let c=0;c<COLS;c++){
-      let char = pageChars[r*COLS+c] || " ";
+      const char = chars[r*COLS+c] || " ";
       const charDiv = document.createElement("div");
       charDiv.className="char";
       const matrix = getMatrix(char);
@@ -148,24 +143,27 @@ function renderPage(pageChars){
   }
 }
 
+// Render całego tekstu
 function renderText(text){
   if(!text || text.trim()===""){
-    const emptyPage = Array(ROWS*COLS).fill(" ");
-    emptyPage[0]="*"; // górny lewy
-    emptyPage[COLS-1]="*"; // górny prawy
-    emptyPage[ROWS*COLS-COLS]="*"; // dolny lewy
-    emptyPage[ROWS*COLS-1]="*"; // dolny prawy
-    renderPage(emptyPage);
-  } else {
-    const pages = paginateText(text);
-    let current=0;
-    renderPage(pages[current]);
-    if(pages.length>1){
-      setInterval(()=>{
-        current=(current+1)%pages.length;
-        renderPage(pages[current]);
-      },2500);
-    }
+    const empty = Array(ROWS*COLS).fill(" ");
+    empty[0]="*";               // górny lewy
+    empty[COLS-1]="*";          // górny prawy
+    empty[ROWS*COLS-COLS]="*";  // dolny lewy
+    empty[ROWS*COLS-1]="*";      // dolny prawy
+    renderPage(empty);
+    return;
+  }
+
+  const slides = paginateText(text);
+  let current=0;
+  renderPage(slides[current]);
+
+  if(slides.length>1){
+    setInterval(()=>{
+      current=(current+1)%slides.length;
+      renderPage(slides[current]);
+    }, 2500);
   }
 }
 
